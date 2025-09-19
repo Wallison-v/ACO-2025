@@ -6,6 +6,7 @@ import random
 import math
 import pandas as pd
 import os
+import string
 
 class Formiga:
   def __init__(self, inicio_idx):
@@ -28,9 +29,7 @@ class Ponto:
   def __init__(self, x, y):
     self.x = x
     self.y = y
-
-
-
+    
 class Caminho:
   def __init__(self, ponto_i, ponto_j):
     self.ponto_i = ponto_i
@@ -80,55 +79,27 @@ class Grafo:
     else:
       return [caminho for caminho in self.caminhos if caminho.contem(formiga)]
     
-# Função para carregar pontos do CSV
 def carregar_pontos(caminho_arquivo):
     df = pd.read_csv(caminho_arquivo)
     pontos = [Ponto(row["x"], row["y"]) for _, row in df.iterrows()]
     return pontos    
   
 # Parâmetros do ACO
-# -----------------------------
+
 n = 15        # número de formigas
 p = 0.9       # taxa de evaporação
 alfa = 0.6    # importância do feromônio
 beta = 0.7    # importância da heurística
-iteracoes = 3    # quantidade de iterações que irão acontecer até a parada da otimização
+iteracoes = 20    # quantidade de iterações que irão acontecer até a parada da otimização
 start_index = 0    # ponto de início
-#qtd_pontos = len(pontos)  quantidade de pontos do grafo que será gerado
 
 # Carregar pontos de um arquivo
-arquivo = (r"Unip_ACO\pontos.csv.txt")
+arquivo = (r"C:\Users\VLN-000159\OneDrive\Área de Trabalho\Unip_ACO\pontos.csv.txt")
 pontos = carregar_pontos(arquivo)
 qtd_pontos = len(pontos)
-   
-  
-# for _ in range(qtd_pontos):
-  # pontos.append(Ponto(random.uniform(-100, 100), random.uniform(-100, 100)))
-  # pontos.append(Ponto(-22.30, -1.88))
 
-'''pontos.append(Ponto(-41.38, -11.28))
-
-pontos.append(Ponto(93.75, 2.76))
-pontos.append(Ponto(39.17, 19.33))
-pontos.append(Ponto(28.89, -12.84))
-pontos.append(Ponto(-56.75, 18.91))
-pontos.append(Ponto(-31.16, -8.51))
-pontos.append(Ponto(-23.15, 15.76))
-pontos.append(Ponto(-4.98, 5.28))
-pontos.append(Ponto(62.46, -3.10))
-pontos.append(Ponto(1.49, -7.51))
-pontos.append(Ponto(62.13, 15.94))
-pontos.append(Ponto(18.41, -3.48))
-pontos.append(Ponto(57.99, -11.01))
-pontos.append(Ponto(3.63, 11.11))
-pontos.append(Ponto(-3.02, -13.18))
-pontos.append(Ponto(94.58, -7.96))
-pontos.append(Ponto(60.19, -2.96))
-pontos.append(Ponto(-12.66, -14.04))
-pontos.append(Ponto(-11.23, 20.91))'''
-
-# for _ in range(qtd_pontos):
-#   print(pontos[_])
+# Gerar rótulos (A, B, C, ...)
+rotulos = list(string.ascii_uppercase[:qtd_pontos])
 
 # criando os caminhos
 caminhos = []
@@ -146,50 +117,13 @@ while i < len(pontos) - 1:
 # criando o grafo
 grafo = Grafo(caminhos)
 
-"""
-## Grafo criado
-
-for ponto in pontos:
-    plt.plot(ponto.x, ponto.y, marker='o', color='r')
-
-x = []
-y = []
-
-for caminho in caminhos:
-  x_i = caminho.ponto_i.x
-  x_j = caminho.ponto_j.x
-  y_i = caminho.ponto_i.y
-  y_j = caminho.ponto_j.y
-
-  x_texto = (x_i + x_j) / 2
-  y_texto = (y_i + y_j) / 2
-
-  plt.text(x_texto, y_texto, "{:.2f}".format(caminho.comprimento))
-
-  x.append(x_i)
-  x.append(x_j)
-  y.append(y_i)
-  y.append(y_j)
-
-plt.plot(x, y, color='c')
-
-plt.show()
-
-gx = x
-gy = y
-"""
 # Inicialização da colônia
 def inicializar_colonia():
   formigas = []
 
   for _ in range(n):
-    #print(f"Iteração: {_}")
-    #formigas.append(Formiga(random.choice(pontos)))
     formigas.append(Formiga(pontos[start_index]))
-
   return formigas
-
-"""## Escolha do caminho"""
 
 def escolher_caminho(possiveis_caminhos):
   denominador = sum([(caminho.feromonio)**alfa * (1 / caminho.comprimento)**beta for caminho in possiveis_caminhos])
@@ -219,17 +153,12 @@ def atualizar_feromonios(caminhos):
     caminho.feromonio = (1 - p) * caminho.feromonio + soma_heuristica
     caminho.formigas_passantes = []
 
-"""## Movimentação da formiga
-
-"""
-
 def movimentar_formiga(formiga, grafo):
   while True:
     possiveis_caminhos = grafo.possiveis_caminhos(formiga)
-
     if possiveis_caminhos == []:
       break
-
+    
     caminho_escolhido = escolher_caminho(possiveis_caminhos)
     caminho_escolhido.formigas_passantes.append(formiga)
     formiga.andar(caminho_escolhido.ponto_adjacente(formiga.ponto_atual))
@@ -238,15 +167,16 @@ def movimentar_formiga(formiga, grafo):
 # Execução do ACO
 melhor_rota = None
 distancia_melhor_rota = 0
+historico_distancias = []  # <<< NOVO: lista para guardar evolução das distâncias
 
 print(f"---Algoritmo de otimização de formigas---")
 print(f"*ACO com {n} formigas por geração*")
 print()
 
+# Letras para pontos
+labels = string.ascii_uppercase  
 
 for _ in range(iteracoes):
-  i = 0
-
   print(f"Iteração: {_+1}")
   formigas = inicializar_colonia()
 
@@ -258,15 +188,14 @@ for _ in range(iteracoes):
       distancia_melhor_rota = distancia_rota(formiga.rota)
 
   atualizar_feromonios(grafo.caminhos)
+  
+  # salvar a melhor distância da iteração
+  historico_distancias.append(distancia_melhor_rota)
 
   # mostrando a melhor rota a cada iteracao
   if _ < iteracoes - 1:
-    for ponto in pontos:
-      if i == 0:
-        plt.plot(ponto.x, ponto.y, marker='x', color='b')
-        i = i+1
-      else:
-        plt.plot(ponto.x, ponto.y, marker='o', color='g')
+    for idx, ponto in enumerate(pontos):
+        plt.text(ponto.x + 1, ponto.y + 1, rotulos[idx], fontsize=12, color="blue")
 
     x = []
     y = []
@@ -288,8 +217,9 @@ for _ in range(iteracoes):
 
     plt.plot(x, y, color='y')
   else:
-    for ponto in pontos:
+    for idx, ponto in enumerate(pontos):
       plt.plot(ponto.x, ponto.y, marker='o', color='g')
+      plt.text(ponto.x + 1, ponto.y + 1, rotulos[idx], fontsize=12, color="blue")
   
   x = []
   y = []
@@ -302,4 +232,14 @@ for _ in range(iteracoes):
   plt.plot(x, y, color='r')
 
   plt.show()
+  print("Melhor rota:", [labels[pontos.index(p)] for p in melhor_rota])
   print("{:.2f}".format(distancia_melhor_rota))
+
+# --- GRÁFICO FINAL DE EVOLUÇÃO ---
+plt.figure(figsize=(8,5))
+plt.plot(range(1, iteracoes+1), historico_distancias, marker='o', linestyle='-', color='b')
+plt.title("Evolução da Melhor Distância por Iteração (ACO)")
+plt.xlabel("Iterações")
+plt.ylabel("Distância da Melhor Rota")
+plt.grid(True)
+plt.show()
