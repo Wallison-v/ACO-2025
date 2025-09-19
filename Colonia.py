@@ -94,7 +94,7 @@ iteracoes = 20    # quantidade de iterações que irão acontecer até a parada 
 start_index = 0    # ponto de início
 
 # Carregar pontos de um arquivo
-arquivo = (r"C:\Users\VLN-000159\OneDrive\Área de Trabalho\Unip_ACO\pontos.csv.txt")
+arquivo = (r"Unip_ACO\pontos.csv.txt")
 pontos = carregar_pontos(arquivo)
 qtd_pontos = len(pontos)
 
