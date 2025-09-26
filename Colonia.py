@@ -98,8 +98,8 @@ arquivo = (r"Unip_ACO\pontos.csv.txt")
 pontos = carregar_pontos(arquivo)
 qtd_pontos = len(pontos)
 
-# Gerar rótulos (A, B, C, ...)
-rotulos = list(string.ascii_uppercase[:qtd_pontos])
+# Gerar rótulos (1, 2, 3, ...)
+rotulos = [str(i+1) for i in range(qtd_pontos)]
 
 # criando os caminhos
 caminhos = []
@@ -232,7 +232,7 @@ for _ in range(iteracoes):
   plt.plot(x, y, color='r')
 
   plt.show()
-  print("Melhor rota:", [labels[pontos.index(p)] for p in melhor_rota])
+  print("Melhor rota:", [rotulos[pontos.index(p)] for p in melhor_rota])
   print("{:.2f}".format(distancia_melhor_rota))
 
 # --- GRÁFICO FINAL DE EVOLUÇÃO ---
@@ -242,4 +242,5 @@ plt.title("Evolução da Melhor Distância por Iteração (ACO)")
 plt.xlabel("Iterações")
 plt.ylabel("Distância da Melhor Rota")
 plt.grid(True)
+
 plt.show()
